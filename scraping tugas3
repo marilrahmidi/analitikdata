@@ -1,0 +1,43 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+from google.colab import files  
+
+# URL CNBC Indonesia
+url = "https://www.cnbcindonesia.com/"
+headers = {"User-Agent": "Mozilla/5.0"}
+response = requests.get(url, headers=headers)
+
+if response.status_code == 200:
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # List untuk menyimpan data
+    news_data = []
+    
+    # Ambil berita utama (headline)
+    main_headline = soup.find('div', class_='headline')
+    if main_headline and main_headline.a:
+        title = main_headline.a.get_text(strip=True)
+        link = main_headline.a['href']
+        news_data.append([title, link])
+    
+    # Ambil berita lain (kategori berita)
+    sections = soup.find_all('article', limit=30)  # Ambil lebih banyak berita
+    
+    for section in sections:
+        title_tag = section.find('a')
+        if title_tag:
+            title = title_tag.get_text(strip=True)
+            link = title_tag['href']
+            news_data.append([title, link])
+    
+    # Simpan hasil ke CSV
+    df = pd.DataFrame(news_data, columns=['Judul Berita', 'Link'])
+    file_name = "cnbc_news.csv"
+    df.to_csv(file_name, index=False)
+    files.download(file_name)
+
+    print(f"Berhasil mengambil {len(news_data)} berita dari CNBC Indonesia!")
+
+else:
+    print("Gagal mengambil data")
