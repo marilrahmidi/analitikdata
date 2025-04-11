@@ -1,0 +1,45 @@
+# Import library yang diperlukan
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Library untuk machine learning
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+
+# Library untuk analisis statistik
+import statsmodels.api as sm
+
+df_namapraktikan = pd.read_csv('houseprices (2).csv')
+df_namapraktikan.head()
+
+print("Jumlah Dataset: "+str(len(df_namapraktikan)))
+
+df_namapraktikan.describe()
+
+sns.histplot(data=df_namapraktikan, x="Price", kde=True)
+plt.show()
+
+sns.pairplot(df_namapraktikan)
+plt.show()
+
+x2 = df_namapraktikan[['Bedrooms', 'Bathrooms', 'SqFt']]
+y2 = df_namapraktikan['Price']
+x2_train, x2_test, y2_train, y2_test = train_test_split(x2, y2, test_size=0.3, random_state=42)
+
+regressor = LinearRegression()
+regressor.fit(x2_train, y2_train)
+
+y2_pred = regressor.predict(x2_test)
+score = r2_score(y2_test, y2_pred)
+print("R-Squared: {:.2f}".format(score))
+
+x3 = sm.add_constant(x2)
+model = sm.OLS(y2, x3).fit()
+model.summary()
+
+# Correct the column name from 'Neightborhood' to 'Neighborhood'
+df_namapraktikan = pd.get_dummies(df_namapraktikan, columns=['Brick', 'Neighborhood'],drop_first=True,dtype='int') 
+df_namapraktikan.head(10)
